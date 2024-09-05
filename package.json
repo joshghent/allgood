@@ -25,9 +25,18 @@
     "@biomejs/biome": "1.8.3",
     "@changesets/cli": "^2.27.7",
     "@total-typescript/tsconfig": "^1.0.4",
+    "@types/express": "^4.17.21",
+    "express": "^4.19.2",
+    "fastify": "^4.28.1",
+    "hono": "^4.5.11",
     "typescript": "^5.5.3"
   },
   "bugs": {
     "url": "https://github.com/simonorzel26/ts-npm-package-boilerplate-2024/issues"
+  },
+  "peerDependencies": {
+    "express": "^4.19.2",
+    "fastify": "^4.28.1",
+    "hono": "^4.5.11"
   }
 }

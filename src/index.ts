@@ -1,3 +1,4 @@
+import { expressHealthCheck } from "./adapters/express.js";
 import { isExpress, isFastify, isHono } from "./detect.js";
 
 export interface Config {
@@ -37,11 +38,12 @@ export enum Status {
 
 export const createHealthCheck = (config: Config) => {
   const mergedConfig = { ...defaultConfig, ...config };
-  return function (req: GenericRequest, res: GenericResponse): void {
+  return function (req: GenericRequest, res: GenericResponse): Promise<void> {
     // Detect the framework
 
     // Express
     if (req && res && isExpress(req, res)) {
+      return expressHealthCheck(req, res, config);
     }
     // Fastify
     if (req && req.server && isFastify(req)) {
@@ -55,3 +57,5 @@ export const createHealthCheck = (config: Config) => {
     );
   };
 };
+
+export default createHealthCheck;

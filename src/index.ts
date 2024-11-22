@@ -24,7 +24,7 @@ const defaultConfig = {
     cache_connection: false,
     disk_space: false,
     memory_usage: true,
-    outbound_internet: false,
+    outbound_internet: true,
   },
 };
 
@@ -39,7 +39,6 @@ export enum Status {
 
 export const createHealthCheck = (config: Config) => {
   const mergedConfig = merge(defaultConfig, config);
-  console.log(mergedConfig);
   return function (req: GenericRequest, res: GenericResponse): Promise<void> {
     // Detect the framework
 

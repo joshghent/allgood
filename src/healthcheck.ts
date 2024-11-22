@@ -1,3 +1,4 @@
+import { egress } from "./checks/egress.js";
 import { memoryCheck } from "./checks/memory.js";
 import { CheckRegistry, HealthCheck } from "./checks/types.js";
 import { type Config, Status } from "./index.js";
@@ -6,6 +7,7 @@ import { type Config, Status } from "./index.js";
 // The check names are snake case because the checks config is snake case
 const checks: CheckRegistry = {
   memory_usage: memoryCheck,
+  outbound_internet: egress,
 };
 
 export const healthcheckHandler = async (

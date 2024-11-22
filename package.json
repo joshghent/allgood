@@ -8,9 +8,9 @@
   "types": "dist/types/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/simonorzel26/ts-npm-package-boilerplate-2024.git"
+    "url": "git+https://github.com/joshghent/allgood.git"
   },
-  "homepage": "https://github.com/simonorzel26/ts-npm-package-boilerplate-2024",
+  "homepage": "https://github.com/joshghent/allgood",
   "files": [
     "dist/**/*"
   ],
@@ -28,7 +28,7 @@
     "workflow:check": "biome check ./src",
     "release": "pnpm run build && changeset publish"
   },
-  "author": "Simon Orzel",
+  "author": "Josh Ghent <me@joshghent.com>",
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
@@ -39,10 +39,10 @@
     "express": "^4.19.2",
     "fastify": "^4.28.1",
     "hono": "^4.5.11",
-    "typescript": "^5.5.3"
+    "typescript": "5.8.0-dev.20241122"
   },
   "bugs": {
-    "url": "https://github.com/simonorzel26/ts-npm-package-boilerplate-2024/issues"
+    "url": "https://github.com/joshghent/allgood"
   },
   "peerDependencies": {
     "express": "^4.19.2",

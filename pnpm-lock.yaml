@@ -37,8 +37,8 @@ importers:
         specifier: ^4.5.11
         version: 4.5.11
       typescript:
-        specifier: ^5.5.3
-        version: 5.5.3
+        specifier: 5.8.0-dev.20241122
+        version: 5.8.0-dev.20241122
 
 packages:
 
@@ -959,8 +959,8 @@ packages:
     resolution: {integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==}
     engines: {node: '>= 0.6'}
 
-  typescript@5.5.3:
-    resolution: {integrity: sha512-/hreyEujaB0w76zKo6717l3L0o/qEUtRgdvUBvlkhoWeOVMjMuHNHk0BRBzikzuGDqNmPQbg5ifMEqsHLiIUcQ==}
+  typescript@5.8.0-dev.20241122:
+    resolution: {integrity: sha512-7CqLgMl/tulgpSh/EVpI2rqBgrDkJzxJFOv1/zZKZLmwtdLrDHYOEkxscR2a384kdbEwE9vq0aeLFGAtEWHiqw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -2035,7 +2035,7 @@ snapshots:
       media-typer: 0.3.0
       mime-types: 2.1.35
 
-  typescript@5.5.3: {}
+  typescript@5.8.0-dev.20241122: {}
 
   universalify@0.1.2: {}
 

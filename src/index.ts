@@ -22,7 +22,7 @@ const defaultConfig = {
     db_simple_query: false,
     db_migrations: false,
     cache_connection: false,
-    disk_space: false,
+    disk_space: true,
     memory_usage: true,
     outbound_internet: true,
   },

@@ -11,11 +11,9 @@ const checkEgress = async () => {
     try {
       const response = await fetch(url);
       if (response.ok) {
-        console.log(`Internet is working. Successfully reached: ${url}`);
         return true;
       }
     } catch (error) {
-      console.error(`Failed to reach ${url}`);
     }
   }
 

@@ -1,3 +1,4 @@
+import { disk } from "./checks/disk.js";
 import { egress } from "./checks/egress.js";
 import { memoryCheck } from "./checks/memory.js";
 import { CheckRegistry, HealthCheck } from "./checks/types.js";
@@ -8,6 +9,7 @@ import { type Config, Status } from "./index.js";
 const checks: CheckRegistry = {
   memory_usage: memoryCheck,
   outbound_internet: egress,
+  disk_space: disk,
 };
 
 export const healthcheckHandler = async (
@@ -21,7 +23,6 @@ export const healthcheckHandler = async (
   const checkPromises = Object.entries(config.checks)
     .filter(([_, enabled]) => enabled)
     .map(async ([checkName]) => {
-      console.log(checkName);
       if (checks[checkName]) {
         results[checkName] = await checks[checkName]();
 

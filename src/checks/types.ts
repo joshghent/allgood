@@ -1,4 +1,4 @@
-import { Status } from "../index.js";
+import { Config, Status } from "../index.js";
 
 export interface HealthCheck {
   status: Status;
@@ -11,7 +11,7 @@ export interface HealthCheck {
 }
 
 export interface CheckFn {
-  (): Promise<any>
+  (config: Config): Promise<HealthCheck>
 }
 
 export interface CheckRegistry {

@@ -1,3 +1,4 @@
+import { cacheConnection } from "./checks/cache.js";
 import { disk } from "./checks/disk.js";
 import { egress } from "./checks/egress.js";
 import { memoryCheck } from "./checks/memory.js";
@@ -10,6 +11,7 @@ const checks: CheckRegistry = {
   memory_usage: memoryCheck,
   outbound_internet: egress,
   disk_space: disk,
+  cache_connection: cacheConnection,
 };
 
 export const healthcheckHandler = async (
@@ -24,11 +26,9 @@ export const healthcheckHandler = async (
     .filter(([_, enabled]) => enabled)
     .map(async ([checkName]) => {
       if (checks[checkName]) {
-        results[checkName] = await checks[checkName]();
+        results[checkName] = await checks[checkName](config);
 
-        // @ts-expect-error
         if ([Status.fail, Status.warn].includes(results[checkName].status)) {
-          // @ts-expect-error
           status = results[checkName].status;
         }
       }

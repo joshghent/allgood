@@ -28,12 +28,7 @@ import createHealthCheck from "allgood-middleware";
 
 const app = express();
 
-const healthCheck = createHealthCheck({
-  db_connection_string: process.env.DATABASE_URL,
-  checks: {
-    db_simple_query: true,
-  },
-});
+const healthCheck = createHealthCheck();
 
 app.get("/healthcheck", healthCheck);
 

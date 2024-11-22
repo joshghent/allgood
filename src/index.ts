@@ -3,8 +3,8 @@ import { isExpress, isFastify, isHono } from "./detect.js";
 import merge from "lodash.merge";
 
 export interface Config {
-  db_connection_string?: unknown; // the ORM/database instance
-  cache_connection_string?: unknown; //redis or memcache
+  db_connection?: string; // the database connection string
+  cache_connection?: string; //redis or memcache
   checks: {
     db_connection?: boolean;
     db_simple_query?: boolean;
@@ -18,10 +18,10 @@ export interface Config {
 
 const defaultConfig = {
   checks: {
-    db_connection: false,
+    db_connection: true,
     db_simple_query: false,
     db_migrations: false,
-    cache_connection: false,
+    cache_connection: true,
     disk_space: true,
     memory_usage: true,
     outbound_internet: true,

@@ -3,7 +3,11 @@ import { Status } from "../index.js";
 export interface HealthCheck {
   status: Status;
   value: string;
-  componentType: string;
+  componentName: string;
+  message: string;
+
+  // Time in milliseconds
+  time: number;
 }
 
 export interface CheckFn {

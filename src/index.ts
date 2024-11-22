@@ -1,5 +1,6 @@
 import { expressHealthCheck } from "./adapters/express.js";
 import { isExpress, isFastify, isHono } from "./detect.js";
+import merge from "lodash.merge";
 
 export interface Config {
   db_connection_string?: unknown; // the ORM/database instance
@@ -17,13 +18,13 @@ export interface Config {
 
 const defaultConfig = {
   checks: {
-    db_connection: true,
-    db_simple_query: true,
-    db_migrations: true,
-    cache_connection: true,
-    disk_space: true,
+    db_connection: false,
+    db_simple_query: false,
+    db_migrations: false,
+    cache_connection: false,
+    disk_space: false,
     memory_usage: true,
-    outbound_internet: true,
+    outbound_internet: false,
   },
 };
 
@@ -37,13 +38,14 @@ export enum Status {
 }
 
 export const createHealthCheck = (config: Config) => {
-  const mergedConfig = { ...defaultConfig, ...config };
+  const mergedConfig = merge(defaultConfig, config);
+  console.log(mergedConfig);
   return function (req: GenericRequest, res: GenericResponse): Promise<void> {
     // Detect the framework
 
     // Express
     if (req && res && isExpress(req, res)) {
-      return expressHealthCheck(req, res, config);
+      return expressHealthCheck(req, res, mergedConfig);
     }
     // Fastify
     if (req && req.server && isFastify(req)) {

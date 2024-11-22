@@ -2,8 +2,10 @@ import { memoryCheck } from "./checks/memory.js";
 import { CheckRegistry, HealthCheck } from "./checks/types.js";
 import { type Config, Status } from "./index.js";
 
+
+// The check names are snake case because the checks config is snake case
 const checks: CheckRegistry = {
-  memoryUsage: memoryCheck,
+  memory_usage: memoryCheck,
 };
 
 export const healthcheckHandler = async (
@@ -17,6 +19,7 @@ export const healthcheckHandler = async (
   const checkPromises = Object.entries(config.checks)
     .filter(([_, enabled]) => enabled)
     .map(async ([checkName]) => {
+      console.log(checkName);
       if (checks[checkName]) {
         results[checkName] = await checks[checkName]();
 
@@ -45,9 +48,13 @@ export const healthcheckHandler = async (
             </head>
             <body>
               <h1>${statusIcon} Health Check: ${status}</h1>
-              <ul>
+              <ul style="list-style: none;">
                 ${Object.entries(results)
-                  .map(([checkName, checkResult]) => `<li>${checkName}: ${checkResult.value}</li>`)
+                  .map(([checkName, checkResult]) => {
+                    const checkIcon = checkResult.status === Status.pass ? "✅" :
+                                    checkResult.status === Status.warn ? "⚠️" : "❌";
+                    return `<li>${checkIcon} <strong>${checkResult.message}</strong>: Check passed (${checkResult.value}) <span style="color: firebrick;">[${checkResult.time}ms]</span></li>`;
+                  })
                   .join("")}
               </ul>
             </body>

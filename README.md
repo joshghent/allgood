@@ -8,6 +8,8 @@ Compatible with Express, Fastify, Hono and NextJS.
 
 Use it for smoke tests, monitoring, debugging and alerting. It can be used as a healthcheck page for UptimeRobot or similar monitoring services.
 
+Inspired by the [RubyGem of the same name](https://github.com/rameerez/allgood).
+
 ## Install
 ```
 npm i -s allgood

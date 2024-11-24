@@ -56,7 +56,8 @@ export const healthcheckHandler = async (
                   .map(([checkName, checkResult]) => {
                     const checkIcon = checkResult.status === Status.pass ? "✅" :
                                     checkResult.status === Status.warn ? "⚠️" : "❌";
-                    return `<li>${checkIcon} <strong>${checkResult.message}</strong>: Check passed (${checkResult.value}) <span style="color: firebrick;">[${checkResult.time}ms]</span></li>`;
+                    const valueDisplay = checkResult.value === "true" ? "" : `(${checkResult.value})`;
+                    return `<li>${checkIcon} <strong>${checkResult.message}</strong>: Check passed ${valueDisplay} <span style="color: firebrick;">[${checkResult.time}ms]</span></li>`;
                   })
                   .join("")}
               </ul>

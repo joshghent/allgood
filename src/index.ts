@@ -9,24 +9,24 @@ export interface Config {
   cache_connection?: string; //redis or memcache
   checks: {
     db_connection?: boolean;
-    db_simple_query?: boolean;
     db_migrations?: boolean;
     cache_connection?: boolean;
     disk_space?: boolean;
     memory_usage?: boolean;
     outbound_internet?: boolean;
+    cpu_usage?: boolean;
   };
 }
 
 const defaultConfig = {
   checks: {
-    db_connection: true,
-    db_simple_query: false,
+    db_connection: false,
     db_migrations: false,
-    cache_connection: true,
+    cache_connection: false,
     disk_space: true,
     memory_usage: true,
     outbound_internet: true,
+    cpu_usage: true
   },
 };
 

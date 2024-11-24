@@ -1,4 +1,5 @@
 import { cacheConnection } from "./checks/cache.js";
+import { cpuCheck } from "./checks/cpu.js";
 import { dbConnection } from "./checks/db.js";
 import { disk } from "./checks/disk.js";
 import { egress } from "./checks/egress.js";
@@ -14,6 +15,7 @@ const checks: CheckRegistry = {
   disk_space: disk,
   cache_connection: cacheConnection,
   db_connection: dbConnection,
+  cpu_usage: cpuCheck,
 };
 
 export const healthcheckHandler = async (

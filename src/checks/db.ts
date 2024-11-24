@@ -1,9 +1,10 @@
-import { parse } from "pg-connection-string";
+import pkg from "pg-connection-string";
+const { parse } = pkg;
 import { Config, Status } from "../index.js";
 import { HealthCheck } from "./types.js";
 import knex from "knex";
 
-export const connection = async (config: Config): Promise<HealthCheck> => {
+export const dbConnection = async (config: Config): Promise<HealthCheck> => {
   const start = Date.now();
 
   if (!config.db_connection) {
@@ -15,7 +16,7 @@ export const connection = async (config: Config): Promise<HealthCheck> => {
       time: Date.now() - start,
     };
   }
-  const { host, port, database } = parse(config.db_connection);
+  const { host, port, database, user, password } = parse(config.db_connection);
 
   if (!host || !database) {
     return {
@@ -34,7 +35,7 @@ export const connection = async (config: Config): Promise<HealthCheck> => {
         return 'pg'
       case "mysql":
       case 'mariadb':
-        return 'mysql'
+        return 'mysql2'
       case 'mongodb':
       case 'mongodb+srv':
         return 'mongodb'
@@ -45,22 +46,35 @@ export const connection = async (config: Config): Promise<HealthCheck> => {
     }
   })();
 
-  const dbClient = knex({
-    client,
-    connection: {
-      host,
-      port: port ? parseInt(port, 10) : undefined,
-      database,
-    },
-  });
+  try {
+    const dbClient = knex({
+      client,
+      connection: {
+        host,
+        port: port ? parseInt(port, 10) : undefined,
+        user,
+        password,
+        database,
+      },
+    });
 
-  await dbClient.raw("SELECT 1");
+    await dbClient.raw("SELECT 1");
 
-  return {
-    componentName: "db_connection",
-    status: Status.pass,
-    message: "Database connection successful",
-    value: "true",
-    time: Date.now() - start,
-  };
+    return {
+      componentName: "db_connection",
+      status: Status.pass,
+      message: "Database connection successful",
+      value: "true",
+      time: Date.now() - start,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      componentName: "db_connection",
+      status: Status.fail,
+      message: "Database connection failed",
+      value: "false",
+      time: Date.now() - start,
+    };
+  }
 }

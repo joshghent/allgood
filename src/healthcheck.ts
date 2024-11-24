@@ -1,4 +1,5 @@
 import { cacheConnection } from "./checks/cache.js";
+import { dbConnection } from "./checks/db.js";
 import { disk } from "./checks/disk.js";
 import { egress } from "./checks/egress.js";
 import { memoryCheck } from "./checks/memory.js";
@@ -12,6 +13,7 @@ const checks: CheckRegistry = {
   outbound_internet: egress,
   disk_space: disk,
   cache_connection: cacheConnection,
+  db_connection: dbConnection,
 };
 
 export const healthcheckHandler = async (
@@ -53,10 +55,11 @@ export const healthcheckHandler = async (
               <h1>${statusIcon} Health Check: ${status}</h1>
               <ul style="list-style: none;">
                 ${Object.entries(results)
+                  .sort(([a], [b]) => a.localeCompare(b))
                   .map(([checkName, checkResult]) => {
                     const checkIcon = checkResult.status === Status.pass ? "✅" :
                                     checkResult.status === Status.warn ? "⚠️" : "❌";
-                    const valueDisplay = checkResult.value === "true" ? "" : `(${checkResult.value})`;
+                    const valueDisplay = ["true", "false"].includes(checkResult.value) ? "" : `(${checkResult.value})`;
                     return `<li>${checkIcon} <strong>${checkResult.message}</strong>: Check passed ${valueDisplay} <span style="color: firebrick;">[${checkResult.time}ms]</span></li>`;
                   })
                   .join("")}

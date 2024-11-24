@@ -40,9 +40,11 @@ export const healthcheckHandler = async (
 
   await Promise.all(checkPromises);
 
-  const statusIcon = status === Status.pass ? "✅" : status === Status.warn ? "⚠️" : "❌";
-
   if (acceptHeader && acceptHeader.includes("text/html")) {
+    const bannerColor = status === Status.pass ? "#4CAF50" :
+                       status === Status.warn ? "#FFC107" : "#F44336";
+    const bannerTitle = status === Status.pass ? "👌 It's All Good" : "❌ Something's Wrong";
+
     return {
       type: "text/html",
       body: `
@@ -52,20 +54,63 @@ export const healthcheckHandler = async (
               <meta charset="UTF-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
               <title>Health Check</title>
+              <style>
+                body {
+                  margin: 0;
+                  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                  line-height: 1.6;
+                }
+                .banner {
+                  background-color: ${bannerColor};
+                  color: white;
+                  padding: 2rem;
+                  text-align: center;
+                  margin-bottom: 2rem;
+                }
+                .banner h1 {
+                  margin: 0;
+                  font-size: 2.5rem;
+                }
+                .checks-container {
+                  max-width: 500px;
+                  margin: 0 auto;
+                  padding: 0 1rem;
+                }
+                .checks-list {
+                  list-style: none;
+                  padding: 0;
+                }
+                .check-item {
+                  margin-bottom: 1rem;
+                  padding: 0.5rem;
+                  border-radius: 4px;
+                }
+                .time {
+                  color: #666;
+                  font-size: 0.9rem;
+                }
+              </style>
             </head>
             <body>
-              <h1>${statusIcon} Health Check: ${status}</h1>
-              <ul style="list-style: none;">
-                ${Object.entries(results)
-                  .sort(([a], [b]) => a.localeCompare(b))
-                  .map(([checkName, checkResult]) => {
-                    const checkIcon = checkResult.status === Status.pass ? "✅" :
-                                    checkResult.status === Status.warn ? "⚠️" : "❌";
-                    const valueDisplay = ["true", "false"].includes(checkResult.value) ? "" : `(${checkResult.value})`;
-                    return `<li>${checkIcon} <strong>${checkResult.message}</strong>: Check passed ${valueDisplay} <span style="color: firebrick;">[${checkResult.time}ms]</span></li>`;
-                  })
-                  .join("")}
-              </ul>
+              <div class="banner">
+                <h1>${bannerTitle}</h1>
+              </div>
+              <div class="checks-container">
+                <ul class="checks-list">
+                  ${Object.entries(results)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([checkName, checkResult]) => {
+                      const checkIcon = checkResult.status === Status.pass ? "✅" :
+                                      checkResult.status === Status.warn ? "⚠️" : "❌";
+                      const valueDisplay = ["true", "false"].includes(checkResult.value) ? "" : `(${checkResult.value})`;
+                      return `<li class="check-item">
+                               ${checkIcon} <strong>${checkResult.message}</strong> ${valueDisplay}
+                               <span class="time" style="color: firebrick;">[${checkResult.time}ms]</span>
+                             </li>`;
+                    })
+                    .join("")}
+                </ul>
+              </div>
             </body>
             </html>
           `,

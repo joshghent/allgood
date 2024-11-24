@@ -12,9 +12,9 @@ Inspired by the [RubyGem of the same name](https://github.com/rameerez/allgood).
 
 ## Install
 ```
-npm i -s allgood
-yarn add allgood
-pnpm add allgood
+npm i -s @joshghent/allgood
+yarn add @joshghent/allgood
+pnpm add @joshghent/allgood
 ```
 
 Next, add a healthcheck route to your app. We have examples below for popular frameworks.

@@ -1,4 +1,6 @@
 import { expressHealthCheck } from "./adapters/express.js";
+import { fastifyHealthCheck } from "./adapters/fastify.js";
+import { honoHealthCheck } from "./adapters/hono.js";
 import { isExpress, isFastify, isHono } from "./detect.js";
 import merge from "lodash.merge";
 
@@ -39,7 +41,7 @@ export enum Status {
 
 export const createHealthCheck = (config: Config) => {
   const mergedConfig = merge(defaultConfig, config);
-  return function (req: GenericRequest, res: GenericResponse): Promise<void> {
+  return function (req: GenericRequest, res: GenericResponse): Promise<void | Response> {
     // Detect the framework
 
     // Express
@@ -48,9 +50,11 @@ export const createHealthCheck = (config: Config) => {
     }
     // Fastify
     if (req && req.server && isFastify(req)) {
+      return fastifyHealthCheck(req, res, mergedConfig);
     }
     // Hono
     if (req && isHono(req)) {
+      return honoHealthCheck(req, mergedConfig);
     }
 
     throw new Error(

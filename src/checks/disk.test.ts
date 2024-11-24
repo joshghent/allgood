@@ -10,4 +10,9 @@ describe("memoryCheck", () => {
     expect(typeof result.message).toBe("string");
     expect(typeof result.time).toBe("number");
   });
+
+  it("formats the value correctly in GB", async () => {
+    const result = await disk();
+    expect(result.value).toContain("GB");
+  });
 });

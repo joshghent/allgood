@@ -39,7 +39,7 @@
     "@types/jest": "^29.5.14",
     "@types/lodash.merge": "^4.6.9",
     "@types/memcached": "^2.2.10",
-    "@types/node": "^22.9.1",
+    "@types/node": "^24.0.10",
     "@types/node-os-utils": "^1.3.4",
     "express": "^4.19.2",
     "fastify": "^4.28.1",

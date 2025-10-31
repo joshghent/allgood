@@ -8,7 +8,11 @@ export default {
   extensionsToTreatAsEsm: [".ts"],
   transform: {
     "^.+\\.tsx?$": ["ts-jest", {
-      useESM: true
+      useESM: true,
+      tsconfig: {
+        module: "ESNext",
+        moduleResolution: "node"
+      }
     }],
   },
 };

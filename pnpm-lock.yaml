@@ -80,7 +80,7 @@ importers:
         version: 5.6.1
       hono:
         specifier: ^4.5.11
-        version: 4.10.3
+        version: 4.10.4
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@24.9.2)(ts-node@10.9.2(@types/node@24.9.2)(typescript@5.9.3))
@@ -1405,8 +1405,8 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  hono@4.10.3:
-    resolution: {integrity: sha512-2LOYWUbnhdxdL8MNbNg9XZig6k+cZXm5IjHn2Aviv7honhBMOHb+jxrKIeJRZJRmn+htUCKhaicxwXuUDlchRA==}
+  hono@4.10.4:
+    resolution: {integrity: sha512-YG/fo7zlU3KwrBL5vDpWKisLYiM+nVstBQqfr7gCPbSYURnNEP9BDxEMz8KfsDR9JX0lJWDRNc6nXX31v7ZEyg==}
     engines: {node: '>=16.9.0'}
 
   html-escaper@2.0.2:
@@ -4412,7 +4412,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.10.3: {}
+  hono@4.10.4: {}
 
   html-escaper@2.0.2: {}
 

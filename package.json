@@ -64,7 +64,7 @@
     "lodash.merge": "^4.6.2",
     "memcached": "^2.2.2",
     "mysql2": "^3.11.4",
-    "node-os-utils": "^1.3.7",
+    "node-os-utils": "^2.0.1",
     "oracledb": "^6.7.0",
     "pg": "^8.13.1",
     "pg-connection-string": "^2.7.0",

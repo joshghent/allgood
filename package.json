@@ -32,7 +32,7 @@
   "author": "Josh Ghent <me@joshghent.com>",
   "license": "MIT",
   "devDependencies": {
-    "@biomejs/biome": "1.8.3",
+    "@biomejs/biome": "2.3.11",
     "@changesets/cli": "^2.27.7",
     "@total-typescript/tsconfig": "^1.0.4",
     "@types/express": "^4.17.21",

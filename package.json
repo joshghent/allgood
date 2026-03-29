@@ -69,6 +69,6 @@
     "pg": "^8.20.0",
     "pg-connection-string": "^2.12.0",
     "redis": "^5.11.0",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^6.0.1"
   }
 }

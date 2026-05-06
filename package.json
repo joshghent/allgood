@@ -32,7 +32,7 @@
   "author": "Josh Ghent <me@joshghent.com>",
   "license": "MIT",
   "devDependencies": {
-    "@biomejs/biome": "2.4.13",
+    "@biomejs/biome": "2.4.14",
     "@changesets/cli": "^2.31.0",
     "@total-typescript/tsconfig": "^1.0.4",
     "@types/express": "^5.0.6",
@@ -43,9 +43,9 @@
     "@types/node-os-utils": "^1.3.4",
     "express": "^5.2.1",
     "fastify": "^5.8.4",
-    "hono": "^4.12.15",
+    "hono": "^4.12.17",
     "jest": "^30.3.0",
-    "ts-jest": "^29.4.6",
+    "ts-jest": "^29.4.9",
     "ts-node": "^10.9.2",
     "typescript": "5.9.3"
   },
@@ -55,7 +55,7 @@
   "peerDependencies": {
     "express": "^5.2.1",
     "fastify": "^5.8.4",
-    "hono": "^4.12.15"
+    "hono": "^4.12.17"
   },
   "dependencies": {
     "diskusage": "^1.2.0",
@@ -70,5 +70,19 @@
     "pg-connection-string": "^2.12.0",
     "redis": "^5.12.1",
     "sqlite3": "^5.1.7"
+  },
+  "pnpm": {
+    "overrides": {
+      "lodash": "^4.18.0",
+      "tar": "^7.5.11",
+      "diff": "^4.0.4",
+      "minimatch": "^3.1.4",
+      "ajv": "^8.18.0",
+      "@tootallnate/once": "^3.0.1",
+      "brace-expansion": "^2.0.3",
+      "picomatch": "^4.0.4",
+      "path-to-regexp": "^8.4.0",
+      "ip-address": "^10.1.1"
+    }
   }
 }

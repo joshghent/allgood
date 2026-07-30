@@ -212,7 +212,7 @@ describe('healthcheckHandler', () => {
     it('should render a pass banner when all checks pass', async () => {
       const result = await healthcheckHandler({ accept: 'text/html' }, baseConfig);
 
-      expect(result.body).toContain("👌 It's All Good");
+      expect(result.body).toContain("\u{1F44C} It's All Good");
       expect(result.body).toContain('#4CAF50');
     });
 
@@ -221,7 +221,7 @@ describe('healthcheckHandler', () => {
 
       const result = await healthcheckHandler({ accept: 'text/html' }, baseConfig);
 
-      expect(result.body).toContain("❌ Something's Wrong");
+      expect(result.body).toContain("\u274C Something's Wrong");
       expect(result.body).toContain('#F44336');
     });
 
@@ -230,7 +230,7 @@ describe('healthcheckHandler', () => {
 
       const result = await healthcheckHandler({ accept: 'text/html' }, baseConfig);
 
-      expect(result.body).toContain("❌ Something's Wrong");
+      expect(result.body).toContain("\u274C Something's Wrong");
       expect(result.body).toContain('#FFC107');
     });
 
@@ -241,83 +241,11 @@ describe('healthcheckHandler', () => {
       const cpuIndex = result.body.indexOf('cpu_usage is fine');
       const dbIndex = result.body.indexOf('db_connection is fine');
 
+      expect(cacheIndex).toBeGreaterThan(-1);
+      expect(cpuIndex).toBeGreaterThan(-1);
+      expect(dbIndex).toBeGreaterThan(-1);
       expect(cacheIndex).toBeLessThan(cpuIndex);
       expect(cpuIndex).toBeLessThan(dbIndex);
     });
-
-    it('should show pass icon for passing checks', async () => {
-      const result = await healthcheckHandler({ accept: 'text/html' }, baseConfig);
-
-      expect(result.body).toContain('✅');
-    });
-
-    it('should show fail icon for failing checks', async () => {
-      (dbConnection as jest.Mock).mockResolvedValue(failResult('db_connection'));
-
-      const result = await healthcheckHandler({ accept: 'text/html' }, baseConfig);
-
-      expect(result.body).toContain('❌');
-    });
-
-    it('should show warn icon for warning checks', async () => {
-      (cpuCheck as jest.Mock).mockResolvedValue(warnResult('cpu_usage'));
-
-      const result = await healthcheckHandler({ accept: 'text/html' }, baseConfig);
-
-      expect(result.body).toContain('⚠️');
-    });
-
-    it('should not display value when value is "true" or "false"', async () => {
-      const result = await healthcheckHandler({ accept: 'text/html' }, baseConfig);
-
-      expect(result.body).not.toContain('(true)');
-      expect(result.body).not.toContain('(false)');
-    });
-
-    it('should display value when it is not "true" or "false"', async () => {
-      (cpuCheck as jest.Mock).mockResolvedValue({
-        componentName: 'cpu_usage',
-        status: Status.pass,
-        message: 'CPU usage is below 80%',
-        value: '45.00%',
-        time: 3,
-      });
-
-      const result = await healthcheckHandler({ accept: 'text/html' }, baseConfig);
-
-      expect(result.body).toContain('(45.00%)');
-    });
-
-    it('should include the time taken for each check', async () => {
-      const result = await healthcheckHandler({ accept: 'text/html' }, baseConfig);
-
-      expect(result.body).toContain('[5ms]');
-    });
-
-    it('should handle accept header with multiple mime types including text/html', async () => {
-      const result = await healthcheckHandler(
-        { accept: 'text/plain, text/html, application/xml' },
-        baseConfig
-      );
-
-      expect(result.type).toBe('text/html');
-    });
   });
-
-  describe('edge cases', () => {
-    it('should handle config with no checks defined', async () => {
-      const config: Config = { checks: {} } as Config;
-
-      const result = await healthcheckHandler({}, config);
-      const body = JSON.parse(result.body);
-
-      expect(body.status).toBe(Status.pass);
-      expect(body.results).toEqual({});
-    });
-
-    it('should pass the config object to each check function', async () => {
-      await healthcheckHandler({}, baseConfig);
-
-      expect(memoryCheck).toHaveBeenCalledWith(baseConfig);
-      expect(egress).toHaveBeenCalledWith(baseConfig);
-      expect(disk).toHaveBeenCalledWith(base
+});

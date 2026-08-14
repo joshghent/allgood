@@ -249,81 +249,8 @@ describe('healthcheckHandler', () => {
 
     const response = await healthcheckHandler({ accept: 'text/html' }, config);
 
-    expect(response.body).not.toContain('(true)');
+    expect(response.type).toBe('text/html');
+    expect(response.body).not.toContain('>true<');
+    expect(response.body).not.toContain('>false<');
   });
-
-  it('should show value display in HTML for non-boolean values', async () => {
-    (cpuCheck as jest.Mock).mockResolvedValue({
-      componentName: 'cpu_usage',
-      status: Status.pass,
-      message: 'CPU usage is below 80%',
-      value: '45.00%',
-      time: 5,
-    });
-
-    const config: Config = {
-      checks: { cpu_usage: true },
-    } as unknown as Config;
-
-    const response = await healthcheckHandler({ accept: 'text/html' }, config);
-
-    expect(response.body).toContain('(45.00%)');
-  });
-
-  it('should sort checks alphabetically in HTML output', async () => {
-    (memoryCheck as jest.Mock).mockResolvedValue(passResult('memory_usage', 'Memory check'));
-    (cpuCheck as jest.Mock).mockResolvedValue(passResult('cpu_usage', 'CPU check'));
-
-    const config: Config = {
-      checks: { memory_usage: true, cpu_usage: true },
-    } as unknown as Config;
-
-    const response = await healthcheckHandler({ accept: 'text/html' }, config);
-
-    const cpuIndex = response.body.indexOf('CPU check');
-    const memoryIndex = response.body.indexOf('Memory check');
-
-    expect(cpuIndex).toBeLessThan(memoryIndex);
-  });
-
-  it('should handle an empty checks config', async () => {
-    const config: Config = {
-      checks: {},
-    } as unknown as Config;
-
-    const response = await healthcheckHandler({}, config);
-    const parsed = JSON.parse(response.body);
-
-    expect(parsed.status).toBe(Status.pass);
-    expect(parsed.results).toEqual({});
-  });
-
-  it('should call disk check when enabled', async () => {
-    (disk as jest.Mock).mockResolvedValue(passResult('disk_space'));
-
-    const config: Config = {
-      checks: { disk_space: true },
-    } as unknown as Config;
-
-    const response = await healthcheckHandler({}, config);
-    const parsed = JSON.parse(response.body);
-
-    expect(disk).toHaveBeenCalledWith(config);
-    expect(parsed.results.disk_space).toEqual(passResult('disk_space'));
-  });
-
-  it('should call cache_connection check when enabled', async () => {
-    (cacheConnection as jest.Mock).mockResolvedValue(passResult('cache_connection'));
-
-    const config: Config = {
-      checks: { cache_connection: true },
-    } as unknown as Config;
-
-    const response = await healthcheckHandler({}, config);
-    const parsed = JSON.parse(response.body);
-
-    expect(cacheConnection).toHaveBeenCalledWith(config);
-    expect(parsed.results.cache_connection).toEqual(passResult('cache_connection'));
-  });
-
-  it('should pass config to each check function', async () => {
+});

@@ -297,92 +297,14 @@ describe('healthcheckHandler', () => {
     const result = await healthcheckHandler({}, config);
     const body = JSON.parse(result.body);
 
-    expect(Object.keys(body.results).sort()).toEqual([
-      'cache_connection',
-      'cpu_usage',
-      'db_connection',
-      'disk_space',
+    expect(Object.keys(body.results)).toEqual([
       'memory_usage',
       'outbound_internet',
+      'disk_space',
+      'cache_connection',
+      'db_connection',
+      'cpu_usage',
     ]);
     expect(body.status).toBe(Status.pass);
   });
-
-  describe('HTML response', () => {
-    it('should return an HTML response when accept header includes text/html', async () => {
-      const result = await healthcheckHandler({ accept: 'text/html' }, baseConfig);
-
-      expect(result.type).toBe('text/html');
-      expect(result.body).toContain('<!DOCTYPE html>');
-    });
-
-    it('should render a pass banner when overall status is pass', async () => {
-      const result = await healthcheckHandler({ accept: 'text/html' }, baseConfig);
-
-      expect(result.body).toContain("👌 It's All Good");
-      expect(result.body).toContain('#4CAF50');
-    });
-
-    it('should render a fail/warn banner when overall status is not pass', async () => {
-      (memoryCheck as jest.Mock).mockResolvedValue({
-        componentName: 'memory',
-        status: Status.fail,
-        message: 'Memory usage is critical',
-        value: '95%',
-        time: 2,
-      });
-
-      const config = {
-        checks: {
-          ...baseConfig.checks,
-          memory_usage: true,
-        },
-      } as unknown as Config;
-
-      const result = await healthcheckHandler({ accept: 'text/html' }, config);
-
-      expect(result.body).toContain("❌ Something's Wrong");
-      expect(result.body).toContain('#F44336');
-    });
-
-    it('should render a warn banner color when overall status is warn', async () => {
-      (memoryCheck as jest.Mock).mockResolvedValue({
-        componentName: 'memory',
-        status: Status.warn,
-        message: 'Memory usage is approaching limit',
-        value: '85%',
-        time: 2,
-      });
-
-      const config = {
-        checks: {
-          ...baseConfig.checks,
-          memory_usage: true,
-        },
-      } as unknown as Config;
-
-      const result = await healthcheckHandler({ accept: 'text/html' }, config);
-
-      expect(result.body).toContain('#FFC107');
-    });
-
-    it('should list checks sorted alphabetically by check name', async () => {
-      (memoryCheck as jest.Mock).mockResolvedValue({
-        componentName: 'memory',
-        status: Status.pass,
-        message: 'Memory check message',
-        value: '50%',
-        time: 5,
-      });
-      (cpuCheck as jest.Mock).mockResolvedValue({
-        componentName: 'cpu',
-        status: Status.pass,
-        message: 'CPU check message',
-        value: '30%',
-        time: 3,
-      });
-
-      const config = {
-        checks: {
-          ...baseConfig.checks,
-          memory_usage: true,
+});

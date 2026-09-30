@@ -20,8 +20,9 @@ export async function fastifyHealthCheck(
     }
   });
 
-  const { type, body } = await healthcheckHandler(normalizedHeaders, config);
+  const { statusCode, type, body } = await healthcheckHandler(normalizedHeaders, config);
 
+  reply.code(statusCode);
   reply.header("Content-Type", type);
   reply.send(body);
 }

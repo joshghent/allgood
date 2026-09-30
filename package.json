@@ -12,7 +12,8 @@
   },
   "homepage": "https://github.com/joshghent/allgood",
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "llms.txt"
   ],
   "exports": {
     ".": {
@@ -27,7 +28,7 @@
     "check": "biome check --write ./src",
     "workflow:check": "biome check ./src",
     "release": "pnpm run build && changeset publish",
-    "test": "jest ./src/**/*.test.ts"
+    "test": "jest"
   },
   "author": "Josh Ghent <me@joshghent.com>",
   "license": "MIT",

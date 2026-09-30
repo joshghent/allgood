@@ -33,3 +33,8 @@ export function isHono(req: any): req is HonoContext {
     typeof req.res !== "undefined"
   );
 }
+
+// Helper function to detect a Fetch API Request (Next.js App Router, Bun, Deno...)
+export function isWebRequest(req: any): req is Request {
+  return typeof Request !== "undefined" && req instanceof Request;
+}

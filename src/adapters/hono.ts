@@ -19,8 +19,8 @@ export async function honoHealthCheck(
     }
   });
 
-  const { type, body } = await healthcheckHandler(normalizedHeaders, config);
+  const { statusCode, type, body } = await healthcheckHandler(normalizedHeaders, config);
 
   c.header("Content-Type", type);
-  return c.body(body);
+  return c.body(body, statusCode);
 }

@@ -23,7 +23,6 @@ export const healthcheckHandler = async (
   config: Config
 ) => {
   const acceptHeader = headers["accept"];
-  let status: Status = Status.pass;
   let results: Record<string, HealthCheck> = {};
 
   const checkPromises = Object.entries(config.checks)
@@ -31,14 +30,23 @@ export const healthcheckHandler = async (
     .map(async ([checkName]) => {
       if (checks[checkName]) {
         results[checkName] = await checks[checkName](config);
-
-        if ([Status.fail, Status.warn].includes(results[checkName].status)) {
-          status = results[checkName].status;
-        }
       }
     });
 
   await Promise.all(checkPromises);
+
+  // Worked out once every check is in. Setting it as each one finished let a
+  // warning that finished last overwrite a failure that finished first.
+  const statuses = Object.values(results).map((r) => r.status);
+  const status = statuses.includes(Status.fail)
+    ? Status.fail
+    : statuses.includes(Status.warn)
+      ? Status.warn
+      : Status.pass;
+
+  // 503 on failure so a monitor sees it without parsing the body. A warning is
+  // still serving, so it stays 200.
+  const statusCode: 200 | 503 = status === Status.fail ? 503 : 200;
 
   if (acceptHeader && acceptHeader.includes("text/html")) {
     const bannerColor = status === Status.pass ? "#4CAF50" :
@@ -46,6 +54,7 @@ export const healthcheckHandler = async (
     const bannerTitle = status === Status.pass ? "👌 It's All Good" : "❌ Something's Wrong";
 
     return {
+      statusCode,
       type: "text/html",
       body: `
             <!DOCTYPE html>
@@ -117,6 +126,7 @@ export const healthcheckHandler = async (
     };
   } else {
     return {
+      statusCode,
       type: "application/json",
       body: JSON.stringify({
         status,

@@ -2,6 +2,8 @@
 export default {
   preset: "ts-jest/presets/default-esm",
   testEnvironment: "node",
+  // Only the sources. The build compiles into dist/, which must not be run twice.
+  roots: ["<rootDir>/src"],
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1"
   },

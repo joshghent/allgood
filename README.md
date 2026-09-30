@@ -4,7 +4,7 @@
 </center>
 
 Check your app is Allgood with a beautiful `/healthcheck` page and API.
-Compatible with Express, Fastify, Hono and NextJS.
+Compatible with Express, Fastify, Hono, Next.js (App Router) and anything else built on the Fetch API's `Request`/`Response` — Bun, Deno, Remix and SvelteKit included.
 
 Use it for smoke tests, monitoring, debugging and alerting. It can be used as a healthcheck page for UptimeRobot or similar monitoring services.
 
@@ -19,18 +19,43 @@ pnpm add @joshghent/allgood
 
 Next, add a healthcheck route to your app. We have examples below for popular frameworks.
 
+### Installing with an AI coding agent
+Point your agent at [`llms.txt`](https://raw.githubusercontent.com/joshghent/allgood/main/llms.txt) — it is written for them: the install command, a snippet per framework, every config option and the mistakes to avoid. Something like:
+
+> Add a health check to this app using @joshghent/allgood. Follow https://raw.githubusercontent.com/joshghent/allgood/main/llms.txt
+
 ## Examples
+
+### Next.js (App Router)
+```ts
+// app/api/healthcheck/route.ts
+import { createHealthCheck } from '@joshghent/allgood';
+
+export const runtime = 'nodejs'; // not 'edge' — the checks need Node APIs
+export const dynamic = 'force-dynamic'; // never serve a cached result
+
+export const GET = createHealthCheck({
+  db_connection: process.env.DATABASE_URL,
+  cache_connection: process.env.REDIS_URL,
+  checks: {
+    db_connection: true,
+    cache_connection: true,
+  },
+});
+```
+
+The same `createHealthCheck(...)` works as a handler anywhere that passes a standard `Request` and expects a `Response` back (Bun, Deno, Remix, SvelteKit).
 
 ### Express
 ```js
 import express from "express";
-import { createHealthCheck } from 'allgood';
+import { createHealthCheck } from '@joshghent/allgood';
 
 const app = express();
 
 const healthCheck = createHealthCheck({
-  db_connection_string: process.env.DATABASE_URL,
-  cache_connection_string: process.env.REDIS_URL,
+  db_connection: process.env.DATABASE_URL,
+  cache_connection: process.env.REDIS_URL,
   checks: { // default checks
     db_connection: false,
     db_migrations: false,
@@ -52,7 +77,7 @@ app.listen(3000, () => {
 ### Fastify
 ```js
 import fastify from 'fastify'
-import { createHealthCheck } from 'allgood';
+import { createHealthCheck } from '@joshghent/allgood';
 
 const app = fastify()
 
@@ -85,7 +110,7 @@ start()
 ```js
 import { Hono } from 'hono'
 import { serve } from '@hono/node-server'
-import { createHealthCheck } from 'allgood';
+import { createHealthCheck } from '@joshghent/allgood';
 
 const app = new Hono()
 
@@ -163,6 +188,21 @@ Here is an example of what it will return:
     }
   }
 }
+```
+
+## Status codes
+`200` when every check passes or only warns, `503` when any check fails — so a monitor can alert on the status code without parsing the body.
+
+## Connections
+The database check keeps one single-connection pool per connection string for the life of the process, rather than opening a new one per request. The Redis check opens a connection per check and always closes it. To close the database pools on shutdown:
+
+```ts
+import { closeDbClients } from '@joshghent/allgood';
+
+process.on('SIGTERM', async () => {
+  await closeDbClients();
+  process.exit(0);
+});
 ```
 
 ## What if my app is not running?

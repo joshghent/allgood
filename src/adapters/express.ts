@@ -19,8 +19,9 @@ export async function expressHealthCheck(
       normalizedHeaders[key] = value;
     }
   });
-  const { type, body } = await healthcheckHandler(normalizedHeaders, config);
+  const { statusCode, type, body } = await healthcheckHandler(normalizedHeaders, config);
 
+  res.status(statusCode);
   res.setHeader("Content-Type", type);
   res.send(body);
 }

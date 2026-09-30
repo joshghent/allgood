@@ -1,4 +1,4 @@
-import { dbConnection } from './db.js';
+import { closeDbClients, dbConnection } from './db.js';
 import { Status } from '../index.js';
 import knex from 'knex';
 
@@ -7,10 +7,12 @@ jest.mock('knex');
 
 describe('dbConnection', () => {
   // Reset mocks before each test
-  beforeEach(() => {
+  beforeEach(async () => {
+    await closeDbClients();
     jest.clearAllMocks();
     (knex as unknown as jest.Mock).mockReturnValue({
       raw: jest.fn(),
+      destroy: jest.fn(),
     });
   });
 
@@ -48,6 +50,7 @@ describe('dbConnection', () => {
     const mockRaw = jest.fn().mockResolvedValue(true);
     (knex as unknown as jest.Mock).mockReturnValue({
       raw: mockRaw,
+      destroy: jest.fn(),
     });
 
     const result = await dbConnection({
@@ -55,7 +58,7 @@ describe('dbConnection', () => {
       checks: { db_connection: true }
     });
 
-    expect(knex).toHaveBeenCalledWith({
+    expect(knex).toHaveBeenCalledWith(expect.objectContaining({
       client: 'pg',
       connection: {
         host: 'localhost',
@@ -64,7 +67,8 @@ describe('dbConnection', () => {
         password: 'pass',
         database: 'db',
       },
-    });
+      pool: { min: 0, max: 1 },
+    }));
 
     expect(result).toEqual({
       componentName: 'db_connection',
@@ -79,6 +83,7 @@ describe('dbConnection', () => {
     const mockRaw = jest.fn().mockRejectedValue(new Error('Connection failed'));
     (knex as unknown as jest.Mock).mockReturnValue({
       raw: mockRaw,
+      destroy: jest.fn(),
     });
 
     const result = await dbConnection({
@@ -99,6 +104,7 @@ describe('dbConnection', () => {
     const mockRaw = jest.fn().mockResolvedValue(true);
     (knex as unknown as jest.Mock).mockReturnValue({
       raw: mockRaw,
+      destroy: jest.fn(),
     });
 
     const result = await dbConnection({
@@ -106,10 +112,44 @@ describe('dbConnection', () => {
       checks: { db_connection: true }
     });
 
-    expect(knex).toHaveBeenCalledWith({
+    expect(knex).toHaveBeenCalledWith(expect.objectContaining({
       client: 'mysql2',
       connection: expect.any(Object),
-    });
+    }));
     expect(result.status).toBe(Status.pass);
+  });
+
+  it('reuses one pool across checks instead of opening a new one each time', async () => {
+    const mockRaw = jest.fn().mockResolvedValue(true);
+    (knex as unknown as jest.Mock).mockReturnValue({ raw: mockRaw, destroy: jest.fn() });
+    const config = { db_connection: 'postgres://user:pass@localhost:5432/db', checks: { db_connection: true } };
+
+    await dbConnection(config);
+    await dbConnection(config);
+    await dbConnection(config);
+
+    expect(knex).toHaveBeenCalledTimes(1);
+    expect(mockRaw).toHaveBeenCalledTimes(3);
+  });
+
+  it('accepts the postgresql:// scheme as well as postgres://', async () => {
+    const result = await dbConnection({
+      db_connection: 'postgresql://user:pass@localhost:5432/db',
+      checks: { db_connection: true },
+    });
+
+    expect(knex).toHaveBeenCalledWith(expect.objectContaining({ client: 'pg' }));
+    expect(result.status).toBe(Status.pass);
+  });
+
+  it('closes every pool it opened', async () => {
+    const destroy = jest.fn();
+    (knex as unknown as jest.Mock).mockReturnValue({ raw: jest.fn(), destroy });
+
+    await dbConnection({ db_connection: 'postgres://u:p@a:5432/db', checks: { db_connection: true } });
+    await dbConnection({ db_connection: 'postgres://u:p@b:5432/db', checks: { db_connection: true } });
+    await closeDbClients();
+
+    expect(destroy).toHaveBeenCalledTimes(2);
   });
 });

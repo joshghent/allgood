@@ -2,7 +2,24 @@ import pkg from "pg-connection-string";
 const { parse } = pkg;
 import { Config, Status } from "../index.js";
 import { HealthCheck } from "./types.js";
-import knex from "knex";
+import knex, { type Knex } from "knex";
+
+/**
+ * One pool per connection string, kept for the life of the process.
+ *
+ * This used to build a new knex instance on every request and never destroy
+ * it, so each health check left an open pool behind. Polled once a minute,
+ * that slowly used up the database's connection limit — the health check
+ * became the outage. A single-connection pool is all a `SELECT 1` needs.
+ */
+const clients = new Map<string, Knex>();
+
+/** Closes every pool this module opened. For graceful shutdown, and tests. */
+export const closeDbClients = async () => {
+  const open = [...clients.values()];
+  clients.clear();
+  await Promise.all(open.map((c) => c.destroy()));
+};
 
 export const dbConnection = async (config: Config): Promise<HealthCheck> => {
   const start = Date.now();
@@ -32,6 +49,7 @@ export const dbConnection = async (config: Config): Promise<HealthCheck> => {
   const client = (() => {
     switch (protocol) {
       case "postgres":
+      case "postgresql":
         return 'pg'
       case "mysql":
       case 'mariadb':
@@ -47,16 +65,24 @@ export const dbConnection = async (config: Config): Promise<HealthCheck> => {
   })();
 
   try {
-    const dbClient = knex({
-      client,
-      connection: {
-        host,
-        port: port ? parseInt(port, 10) : undefined,
-        user,
-        password,
-        database,
-      },
-    });
+    let dbClient = clients.get(config.db_connection);
+    if (!dbClient) {
+      dbClient = knex({
+        client,
+        connection: {
+          host,
+          port: port ? parseInt(port, 10) : undefined,
+          user,
+          password,
+          database,
+        },
+        pool: { min: 0, max: 1 },
+        // Fail the check rather than hang the request when the database is
+        // unreachable. knex's default waits 60s for a connection.
+        acquireConnectionTimeout: 5000,
+      });
+      clients.set(config.db_connection, dbClient);
+    }
 
     await dbClient.raw("SELECT 1");
 

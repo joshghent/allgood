@@ -20,14 +20,30 @@ const checkMemcached = async (connection: string): Promise<boolean> => {
   }
 }
 
+/**
+ * A client per check, always disconnected afterwards.
+ *
+ * This used to `quit()` only on success. A failed ping left the client behind,
+ * and ioredis reconnects forever by default — so every check against a down
+ * Redis added another socket retrying in the background, for good.
+ */
 const checkRedis = async (connection: string): Promise<boolean> => {
+  const client = new Redis(connection, {
+    lazyConnect: true,
+    connectTimeout: 5000,
+    maxRetriesPerRequest: 0,
+    retryStrategy: () => null,
+  });
+  // Without a listener ioredis reports connection errors as unhandled events.
+  client.on("error", () => {});
   try {
-    const client = new Redis(connection);
+    await client.connect();
     await client.ping();
-    await client.quit();
     return true;
   } catch (error) {
     return false;
+  } finally {
+    client.disconnect();
   }
 }
 

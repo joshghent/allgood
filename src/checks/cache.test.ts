@@ -29,6 +29,7 @@ describe('cache', () => {
       quit: jest.fn(),
       disconnect: jest.fn(),
       connect: jest.fn(),
+      on: jest.fn(),
     } as unknown as jest.Mocked<Redis>;
 
     (Redis as unknown as jest.Mock).mockImplementation(() => mockRedisInstance);
@@ -85,9 +86,9 @@ describe('cache', () => {
       }
     });
 
-    expect(Redis).toHaveBeenCalledWith('redis://localhost:6379');
+    expect(Redis).toHaveBeenCalledWith('redis://localhost:6379', expect.objectContaining({ lazyConnect: true }));
     expect(mockRedisInstance.ping).toHaveBeenCalled();
-    expect(mockRedisInstance.quit).toHaveBeenCalled();
+    expect(mockRedisInstance.disconnect).toHaveBeenCalled();
     expect(result).toEqual({
       componentName: 'cache_connection',
       status: Status.pass,
@@ -172,5 +173,24 @@ describe('cache', () => {
       value: 'false',
       time: expect.any(Number),
     });
+  });
+
+  it('disconnects the Redis client even when the ping fails', async () => {
+    mockRedisInstance.ping.mockRejectedValue(new Error('ECONNREFUSED'));
+
+    const result = await cacheConnection({
+      cache_connection: 'redis://localhost:6379',
+      checks: { cache_connection: true },
+    });
+
+    expect(result.status).toBe(Status.fail);
+    expect(mockRedisInstance.disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not let a failed Redis client retry forever', async () => {
+    await cacheConnection({ cache_connection: 'redis://localhost:6379', checks: { cache_connection: true } });
+
+    const options = (Redis as unknown as jest.Mock).mock.calls[0][1];
+    expect(options.retryStrategy()).toBeNull();
   });
 });

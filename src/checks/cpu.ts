@@ -6,12 +6,13 @@ export const cpuCheck = async (): Promise<HealthCheck> => {
   const start = Date.now();
   const cpu = osu.cpu
   const cpuUsage = await cpu.usage()
+  const ok = cpuUsage <= 80
 
   return {
-    status: cpuUsage > 80 ? Status.fail : Status.pass,
+    status: ok ? Status.pass : Status.fail,
     value: `${cpuUsage.toFixed(2)}%`,
     componentName: "cpu",
-    message: "CPU usage is below 80%",
+    message: ok ? "CPU usage is below 80%" : "CPU usage is above 80%",
     time: Date.now() - start,
   }
 }

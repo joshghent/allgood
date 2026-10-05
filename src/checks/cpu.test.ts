@@ -36,7 +36,7 @@ describe('cpuCheck', () => {
       status: Status.fail,
       value: '85.00%',
       componentName: 'cpu',
-      message: 'CPU usage is below 80%'
+      message: 'CPU usage is above 80%'
     });
     expect(result.time).toBeGreaterThanOrEqual(0);
   });

@@ -1,18 +1,15 @@
+autoInstallPeers: false
+
 allowBuilds:
   diskusage: true
   unrs-resolver: true
-  oracledb: true
   '@parcel/watcher': false
-  sqlite3: false
 
 overrides:
   lodash: ^4.18.0
-  tar: ^7.5.21
   diff: ^4.0.4
   minimatch: ^3.1.4
   ajv: ^8.18.0
-  '@tootallnate/once': ^3.0.1
   brace-expansion: ^2.1.7
   picomatch: ^4.0.4
   path-to-regexp: ^8.4.0
-  ip-address: ^10.7.1

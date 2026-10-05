@@ -1,0 +1,18 @@
+allowBuilds:
+  diskusage: true
+  oracledb: true
+  sqlite3: false
+  unrs-resolver: true
+  '@parcel/watcher': false
+
+overrides:
+  lodash: ^4.18.0
+  tar: ^7.5.11
+  diff: ^4.0.4
+  minimatch: ^3.1.4
+  ajv: ^8.18.0
+  '@tootallnate/once': ^3.0.1
+  brace-expansion: ^2.0.3
+  picomatch: ^4.0.4
+  path-to-regexp: ^8.4.0
+  ip-address: ^10.1.1

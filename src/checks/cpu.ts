@@ -1,17 +1,31 @@
 import { Status } from "../index.js";
 import { HealthCheck } from "./types.js";
-import osu from "node-os-utils";
+import { OSUtils } from "node-os-utils";
+
+const osu = new OSUtils();
 
 export const cpuCheck = async (): Promise<HealthCheck> => {
   const start = Date.now();
-  const cpu = osu.cpu
-  const cpuUsage = await cpu.usage()
+  const usage = await osu.cpu.usage()
+
+  if (!usage.success) {
+    return {
+      status: Status.fail,
+      value: "N/A",
+      componentName: "cpu",
+      message: "CPU usage could not be read",
+      time: Date.now() - start,
+    }
+  }
+
+  const cpuUsage = usage.data
+  const ok = cpuUsage <= 80
 
   return {
-    status: cpuUsage > 80 ? Status.fail : Status.pass,
+    status: ok ? Status.pass : Status.fail,
     value: `${cpuUsage.toFixed(2)}%`,
     componentName: "cpu",
-    message: "CPU usage is below 80%",
+    message: ok ? "CPU usage is below 80%" : "CPU usage is above 80%",
     time: Date.now() - start,
   }
 }

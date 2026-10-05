@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "diskusage": "^1.2.0",
-    "ioredis": "^5.11.1",
+    "ioredis": "^6.0.0",
     "knex": "^3.3.0",
     "lodash.merge": "^4.6.2",
     "memcached": "^2.2.2",

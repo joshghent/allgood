@@ -68,5 +68,10 @@
     "pg": "^8.23.1",
     "pg-connection-string": "^2.14.1"
   },
-  "packageManager": "pnpm@11.24.0"
+  "packageManager": "pnpm@11.24.0",
+  "pnpm": {
+    "overrides": {
+      "proxy-addr": "~2.0.8"
+    }
+  }
 }

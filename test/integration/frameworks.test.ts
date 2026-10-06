@@ -94,8 +94,8 @@ describe("Fastify", () => {
 
 describe("Hono", () => {
   const app = new Hono();
-  app.get("/health", createHealthCheck(config) as never);
-  app.get("/down", createHealthCheck(failing) as never);
+  app.get("/health", createHealthCheck(config));
+  app.get("/down", createHealthCheck(failing));
 
   it("serves a passing JSON health check", async () => {
     await expectHealthy(await app.request("/health"));

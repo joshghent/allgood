@@ -1,9 +1,12 @@
+import type { Request as ExpressRequest, Response as ExpressResponse } from "express";
+import type { FastifyReply, FastifyRequest } from "fastify";
+import type { Context as HonoContext } from "hono";
+import merge from "lodash.merge";
 import { expressHealthCheck } from "./adapters/express.js";
 import { fastifyHealthCheck } from "./adapters/fastify.js";
 import { honoHealthCheck } from "./adapters/hono.js";
 import { webHealthCheck } from "./adapters/web.js";
-import { isExpress, isFastify, isHono, isWebRequest } from "./detect.js";
-import merge from "lodash.merge";
+import { isExpress, isExpressResponse, isFastify, isFastifyReply, isHono, isWebRequest } from "./detect.js";
 
 export interface Config {
   db_connection?: string; // the database connection string
@@ -27,12 +30,9 @@ const defaultConfig = {
     disk_space: true,
     memory_usage: true,
     outbound_internet: true,
-    cpu_usage: true
+    cpu_usage: true,
   },
 };
-
-type GenericRequest = any;
-type GenericResponse = any;
 
 export enum Status {
   pass = "pass",
@@ -45,32 +45,36 @@ export const createHealthCheck = (config: Config) => {
   // so merging into defaultConfig leaked one call's options into every later
   // createHealthCheck in the same process.
   const mergedConfig = merge({}, defaultConfig, config);
-  return function (req: GenericRequest, res?: GenericResponse): Promise<void | Response> {
-    // Detect the framework
 
+  // One signature per framework, so the handler type-checks wherever it's
+  // mounted. The Fetch API one is last: TypeScript reads Parameters<> and
+  // ReturnType<> from the last overload, which is what a Next.js route sees.
+  function healthCheck(req: ExpressRequest, res: ExpressResponse): Promise<void>;
+  function healthCheck(req: FastifyRequest, reply: FastifyReply): Promise<void>;
+  function healthCheck(c: HonoContext): Promise<Response>;
+  function healthCheck(req: Request, context?: unknown): Promise<Response>;
+  function healthCheck(req: unknown, res?: unknown): Promise<void> | Promise<Response> {
     // Next.js App Router and anything else on the Fetch API. First, because a
     // Web Request is unambiguous; the second argument is Next's route context.
     if (isWebRequest(req)) {
       return webHealthCheck(req, mergedConfig);
     }
-
-    // Express
-    if (req && res && isExpress(req, res)) {
+    if (isExpress(req) && isExpressResponse(res)) {
       return expressHealthCheck(req, res, mergedConfig);
     }
-    // Fastify
-    if (req && req.server && isFastify(req)) {
+    if (isFastify(req) && isFastifyReply(res)) {
       return fastifyHealthCheck(req, res, mergedConfig);
     }
-    // Hono
-    if (req && isHono(req)) {
+    if (isHono(req)) {
       return honoHealthCheck(req, mergedConfig);
     }
 
     throw new Error(
-      "❌ Unsupported framework detected. The app must be an instance of Express, Fastify, Hono or a Fetch API framework such as Next.js. Please raise an issue at https://github.com/joshghent/allgood to request framework support!"
+      "❌ Unsupported framework detected. The app must be an instance of Express, Fastify, Hono or a Fetch API framework such as Next.js. Please raise an issue at https://github.com/joshghent/allgood to request framework support!",
     );
-  };
+  }
+
+  return healthCheck;
 };
 
 export default createHealthCheck;

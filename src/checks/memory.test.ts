@@ -1,5 +1,5 @@
-import { memoryCheck } from "./memory.js";
 import { getHeapStatistics } from "node:v8";
+import { memoryCheck } from "./memory.js";
 
 jest.mock("node:v8", () => {
   const actual = jest.requireActual("node:v8");
@@ -8,6 +8,7 @@ jest.mock("node:v8", () => {
 
 const heap = (used: number, limit: number) =>
   (getHeapStatistics as jest.Mock).mockReturnValueOnce({ used_heap_size: used, heap_size_limit: limit });
+
 import { Status } from "../index.js";
 
 describe("memoryCheck", () => {

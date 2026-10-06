@@ -1,11 +1,8 @@
-import { Context } from "hono";
+import type { Context } from "hono";
 import { healthcheckHandler } from "../healthcheck.js";
 import type { Config } from "../index.js";
 
-export async function honoHealthCheck(
-  c: Context,
-  config: Config
-): Promise<Response> {
+export async function honoHealthCheck(c: Context, config: Config): Promise<Response> {
   const normalizedHeaders: Record<string, string | undefined> = {};
 
   // Convert each header to the correct type

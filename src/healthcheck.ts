@@ -4,9 +4,8 @@ import { dbConnection } from "./checks/db.js";
 import { disk } from "./checks/disk.js";
 import { egress } from "./checks/egress.js";
 import { memoryCheck } from "./checks/memory.js";
-import { CheckRegistry, HealthCheck } from "./checks/types.js";
+import type { CheckRegistry, HealthCheck } from "./checks/types.js";
 import { type Config, Status } from "./index.js";
-
 
 // The check names are snake case because the checks config is snake case
 const checks: CheckRegistry = {
@@ -18,12 +17,9 @@ const checks: CheckRegistry = {
   cpu_usage: cpuCheck,
 };
 
-export const healthcheckHandler = async (
-  headers: Record<string, string | undefined>,
-  config: Config
-) => {
-  const acceptHeader = headers["accept"];
-  let results: Record<string, HealthCheck> = {};
+export const healthcheckHandler = async (headers: Record<string, string | undefined>, config: Config) => {
+  const acceptHeader = headers.accept;
+  const results: Record<string, HealthCheck> = {};
 
   const checkPromises = Object.entries(config.checks)
     .filter(([_, enabled]) => enabled)
@@ -48,9 +44,8 @@ export const healthcheckHandler = async (
   // still serving, so it stays 200.
   const statusCode: 200 | 503 = status === Status.fail ? 503 : 200;
 
-  if (acceptHeader && acceptHeader.includes("text/html")) {
-    const bannerColor = status === Status.pass ? "#4CAF50" :
-                       status === Status.warn ? "#FFC107" : "#F44336";
+  if (acceptHeader?.includes("text/html")) {
+    const bannerColor = status === Status.pass ? "#4CAF50" : status === Status.warn ? "#FFC107" : "#F44336";
     const bannerTitle = status === Status.pass ? "👌 It's All Good" : "❌ Something's Wrong";
 
     return {
@@ -108,10 +103,12 @@ export const healthcheckHandler = async (
                 <ul class="checks-list">
                   ${Object.entries(results)
                     .sort(([a], [b]) => a.localeCompare(b))
-                    .map(([checkName, checkResult]) => {
-                      const checkIcon = checkResult.status === Status.pass ? "✅" :
-                                      checkResult.status === Status.warn ? "⚠️" : "❌";
-                      const valueDisplay = ["true", "false"].includes(checkResult.value) ? "" : `(${checkResult.value})`;
+                    .map(([, checkResult]) => {
+                      const checkIcon =
+                        checkResult.status === Status.pass ? "✅" : checkResult.status === Status.warn ? "⚠️" : "❌";
+                      const valueDisplay = ["true", "false"].includes(checkResult.value)
+                        ? ""
+                        : `(${checkResult.value})`;
                       return `<li class="check-item">
                                ${checkIcon} <strong>${checkResult.message}</strong> ${valueDisplay}
                                <span class="time" style="color: firebrick;">[${checkResult.time}ms]</span>

@@ -1,39 +1,48 @@
 import { Config, Status } from "../index.js";
 import { HealthCheck } from "./types.js";
-import {Redis} from "ioredis";
-import Memcached from "memcached";
+import { Redis } from "ioredis";
+import net from "node:net";
+
+const TIMEOUT_MS = 5000;
 
 /**
- * One try, then give up and forget the server.
+ * Sends `version` over a plain socket and expects `VERSION …` back.
  *
- * With the client's defaults a down server never answered: the command waited
- * on 5 retries 30s apart, so the whole health check hung. `retries` and
- * `failures` at 0 fail it at once; `retry: 0` and `remove: true` stop the client
- * reconnecting in the background after `end()`.
- *
- * ponytail: a connect to an unroutable host outlives `end()` until the OS gives
- * up on it (a minute or two). One socket per check, it closes on its own.
+ * This used the `memcached` client, which retried a down server for minutes,
+ * waited forever on one that accepted the connection but never replied, and
+ * only closed pooled sockets on `end()`, so a pending connect outlived it. A
+ * health check needs one round trip; the idle timeout covers connecting and
+ * waiting, and every path destroys the socket.
  */
-const checkMemcached = async (connection: string): Promise<boolean> => {
-  try {
-    const client = new Memcached(connection.replace("memcached://", ""), {
-      timeout: 5000,
-      retries: 0,
-      failures: 0,
-      retry: 0,
-      remove: true,
+const checkMemcached = (connection: string): Promise<boolean> => {
+  const { hostname, port } = new URL(connection);
+  return new Promise((resolve) => {
+    const socket = net.connect({ host: hostname.replace(/^\[|\]$/g, ""), port: Number(port) || 11211 });
+    const done = (ok: boolean) => {
+      socket.destroy();
+      resolve(ok);
+    };
+    let reply = "";
+    socket.setTimeout(TIMEOUT_MS, () => done(false));
+    socket.on("error", () => done(false));
+    socket.on("connect", () => socket.write("version\r\n"));
+    socket.on("data", (chunk) => {
+      reply += chunk;
+      if (reply.includes("\r\n")) done(reply.startsWith("VERSION "));
     });
+  });
+}
 
-    await new Promise((resolve, reject) => {
-      client.version((err, result) => {
-        client.end();
-        if (err) reject(err);
-        else resolve(result);
-      });
-    });
-    return true;
-  } catch (error) {
-    return false;
+/** Rejects if `promise` hasn't settled in `ms`. */
+const within = async <T>(ms: number, promise: Promise<T>): Promise<T> => {
+  let timer: NodeJS.Timeout | undefined;
+  const deadline = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`Timed out after ${ms}ms`)), ms);
+  });
+  try {
+    return await Promise.race([promise, deadline]);
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -43,19 +52,24 @@ const checkMemcached = async (connection: string): Promise<boolean> => {
  * This used to `quit()` only on success. A failed ping left the client behind,
  * and ioredis reconnects forever by default — so every check against a down
  * Redis added another socket retrying in the background, for good.
+ *
+ * `connectTimeout` only covers the TCP connect. A server that accepts and then
+ * never replies left `connect()` waiting on its handshake for good, hence the
+ * deadline around the whole exchange. `disconnectTimeout: 0` destroys the
+ * socket straight away; the default waits 2s for the server to close its side.
  */
 const checkRedis = async (connection: string): Promise<boolean> => {
   const client = new Redis(connection, {
     lazyConnect: true,
-    connectTimeout: 5000,
+    connectTimeout: TIMEOUT_MS,
+    disconnectTimeout: 0,
     maxRetriesPerRequest: 0,
     retryStrategy: () => null,
   });
   // Without a listener ioredis reports connection errors as unhandled events.
   client.on("error", () => {});
   try {
-    await client.connect();
-    await client.ping();
+    await within(TIMEOUT_MS, client.connect().then(() => client.ping()));
     return true;
   } catch (error) {
     return false;

@@ -1,24 +1,22 @@
 import { cacheConnection } from './cache.js';
 import { Redis } from 'ioredis';
-import Memcached from 'memcached';
+import net, { type AddressInfo } from 'node:net';
+import { once } from 'node:events';
 import { Status } from '../index.js';
 
 jest.mock('ioredis', () => ({
   Redis: jest.fn(),
 }));
 
-jest.mock('memcached', () => {
-  return jest.fn().mockImplementation(() => ({
-    version: jest.fn(),
-    end: jest.fn(),
-    on: jest.fn(),
-    connect: jest.fn(),
-  }));
-});
+/** A local TCP server that answers every chunk with `reply`. */
+const memcachedServer = async (reply: string) => {
+  const server = net.createServer((s) => s.on('data', () => s.write(reply))).listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  return { url: `memcached://127.0.0.1:${(server.address() as AddressInfo).port}`, server };
+};
 
 describe('cache', () => {
   let mockRedisInstance: jest.Mocked<Redis>;
-  let mockMemcachedInstance: jest.Mocked<Memcached>;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -28,21 +26,11 @@ describe('cache', () => {
       ping: jest.fn(),
       quit: jest.fn(),
       disconnect: jest.fn(),
-      connect: jest.fn(),
+      connect: jest.fn().mockResolvedValue(undefined),
       on: jest.fn(),
     } as unknown as jest.Mocked<Redis>;
 
     (Redis as unknown as jest.Mock).mockImplementation(() => mockRedisInstance);
-
-    // Mock Memcached instance with required methods
-    mockMemcachedInstance = {
-      version: jest.fn(),
-      end: jest.fn(),
-      on: jest.fn(),
-      connect: jest.fn(),
-    } as unknown as jest.Mocked<Memcached>;
-
-    (Memcached as unknown as jest.Mock).mockImplementation(() => mockMemcachedInstance);
   });
 
   it('should return a fail with an error when the connection string is not provided', async () => {
@@ -99,26 +87,11 @@ describe('cache', () => {
   });
 
   it('should successfully check the status of a Memcached connection', async () => {
-    mockMemcachedInstance.version.mockImplementation((callback) => callback(null, [{
-      server: 'localhost:11211',
-      version: '1.0.0',
-      major: '1',
-      minor: '0',
-      bugfix: '0'
-    }]));
-    mockMemcachedInstance.end.mockImplementation(jest.fn);
+    const { url, server } = await memcachedServer('VERSION 1.6.29\r\n');
 
-    const result = await cacheConnection({
-      cache_connection: 'memcached://localhost:11211',
-      checks: {
-        cache_connection: true
-      }
-    });
+    const result = await cacheConnection({ cache_connection: url, checks: { cache_connection: true } });
+    server.close();
 
-    // The client's default retries made a check against a down server hang.
-    expect(Memcached).toHaveBeenCalledWith('localhost:11211', expect.objectContaining({ retries: 0, retry: 0, remove: true }));
-    expect(mockMemcachedInstance.version).toHaveBeenCalled();
-    expect(mockMemcachedInstance.end).toHaveBeenCalled();
     expect(result).toEqual({
       componentName: 'cache_connection',
       status: Status.pass,
@@ -148,24 +121,11 @@ describe('cache', () => {
     });
   });
 
-  it('should handle Memcached connection failure', async () => {
-    mockMemcachedInstance.version.mockImplementation((callback) =>
-      callback(new Error('Connection failed'), [{
-        server: 'localhost:11211',
-        version: '1.0.0',
-        major: '1',
-        minor: '0',
-        bugfix: '0'
-      }])
-    );
-    mockMemcachedInstance.end.mockImplementation(jest.fn);
+  it('should fail when the server answers with something other than VERSION', async () => {
+    const { url, server } = await memcachedServer('ERROR\r\n');
 
-    const result = await cacheConnection({
-      cache_connection: 'memcached://localhost:11211',
-      checks: {
-        cache_connection: true
-      }
-    });
+    const result = await cacheConnection({ cache_connection: url, checks: { cache_connection: true } });
+    server.close();
 
     expect(result).toEqual({
       componentName: 'cache_connection',
@@ -174,6 +134,16 @@ describe('cache', () => {
       value: 'false',
       time: expect.any(Number),
     });
+  });
+
+  it('should fail when nothing listens on the Memcached port', async () => {
+    const { url, server } = await memcachedServer('');
+    server.close();
+    await once(server, 'close');
+
+    const result = await cacheConnection({ cache_connection: url, checks: { cache_connection: true } });
+
+    expect(result.status).toBe(Status.fail);
   });
 
   it('disconnects the Redis client even when the ping fails', async () => {

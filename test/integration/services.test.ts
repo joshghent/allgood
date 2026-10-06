@@ -1,3 +1,5 @@
+import net, { type AddressInfo } from 'node:net';
+import { once } from 'node:events';
 import { closeDbClients, createHealthCheck } from '../../src/index.js';
 
 // Ports from compose.yaml, which CI mirrors.
@@ -78,6 +80,30 @@ describe.each([
 
     expect(status).toBe(503);
     expect(body.results.cache_connection.status).toBe('fail');
+  });
+
+  it('fails inside 5s and closes its socket when the server never replies', async () => {
+    // Accepts the connection, then says nothing: a stuck server, or the wrong port.
+    // It reads, or it would never see the client close and its own socket would count.
+    const silent = net.createServer((s) => s.resume()).listen(0, '127.0.0.1');
+    await once(silent, 'listening');
+    const port = (silent.address() as AddressInfo).port;
+    const sockets = () => process.getActiveResourcesInfo().filter((r) => r === 'TCPSocketWrap').length;
+    const before = sockets();
+
+    const started = Date.now();
+    const { status } = await check({
+      cache_connection: `${new URL(url).protocol}//127.0.0.1:${port}`,
+      ...only({ cache_connection: true }),
+    });
+    const took = Date.now() - started;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const leftover = sockets() - before;
+    silent.close();
+
+    expect(status).toBe(503);
+    expect(took).toBeLessThan(6000);
+    expect(leftover).toBeLessThanOrEqual(0);
   });
 });
 

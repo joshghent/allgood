@@ -1,0 +1,36 @@
+# Services for `pnpm test:integration`. Start them with `podman compose up -d --wait`.
+# CI runs the same images on the same ports (.github/workflows/main.yml).
+services:
+  postgres:
+    image: docker.io/library/postgres:17
+    environment:
+      POSTGRES_USER: allgood
+      POSTGRES_PASSWORD: allgood
+      POSTGRES_DB: allgood
+    ports: ["54329:5432"]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "allgood"]
+      interval: 2s
+      retries: 30
+  mysql:
+    image: docker.io/library/mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: allgood
+      MYSQL_DATABASE: allgood
+      MYSQL_USER: allgood
+      MYSQL_PASSWORD: allgood
+    ports: ["33069:3306"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uallgood", "-pallgood"]
+      interval: 2s
+      retries: 60
+  redis:
+    image: docker.io/library/redis:7
+    ports: ["63799:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      retries: 30
+  memcached:
+    image: docker.io/library/memcached:1.6
+    ports: ["11219:11211"]

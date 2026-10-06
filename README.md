@@ -214,6 +214,13 @@ Nope, add it anywhere you want.
 ## How does the page look when it's not all good?
 ![Not all good](notgood.png)
 
+## Development
+```bash
+pnpm test                     # unit tests, no services needed
+podman compose up -d --wait   # Postgres, MySQL, Redis and Memcached
+pnpm test:integration         # real services and real Express, Fastify and Hono servers
+```
+
 ## License
 TL;DR: Use it however you want, just don't blame me if it blows up or distribute a closed source version.
 [GNU General Public License v3.0](https://choosealicense.com/licenses/gpl-3.0/)

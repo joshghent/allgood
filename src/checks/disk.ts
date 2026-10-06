@@ -1,15 +1,15 @@
-import { HealthCheck } from "./types.js";
 import diskusage from "diskusage";
 import os from "os";
 import { Status } from "../index.js";
+import type { HealthCheck } from "./types.js";
 
 const getDiskSpace = async () => {
-  let path = os.platform() === 'win32' ? 'c:' : '/';
+  const path = os.platform() === "win32" ? "c:" : "/";
   const usage = await diskusage.check(path);
   return usage.free;
-}
+};
 
-export const disk = async(): Promise<HealthCheck> => {
+export const disk = async (): Promise<HealthCheck> => {
   const start = Date.now();
   const diskSpace = await getDiskSpace();
   const result = diskSpace > 1000000000;
@@ -20,5 +20,5 @@ export const disk = async(): Promise<HealthCheck> => {
     componentName: "disk",
     message: result ? "Disk space is greater than 1GB" : "Disk space is less than 1GB",
     time: Date.now() - start,
-  }
-}
+  };
+};

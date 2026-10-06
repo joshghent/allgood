@@ -1,6 +1,6 @@
 import { getHeapStatistics } from "node:v8";
 import { Status } from "../index.js";
-import { HealthCheck } from "./types.js";
+import type { HealthCheck } from "./types.js";
 
 /**
  * Heap used as a share of the most V8 will ever let it grow to.
@@ -23,4 +23,4 @@ export const memoryCheck = async (): Promise<HealthCheck> => {
     message: ok ? "Memory usage is below 80%" : "Memory usage is above 80%",
     time: Date.now() - start,
   };
-}
+};

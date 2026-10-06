@@ -25,8 +25,8 @@
     "build": "pnpm run build:cjs && pnpm run build:esm",
     "build:cjs": "tsc --project tsconfig.cjs.json",
     "build:esm": "tsc --project tsconfig.esm.json",
-    "check": "biome check --write ./src",
-    "workflow:check": "biome check ./src",
+    "check": "biome check --write",
+    "workflow:check": "biome check",
     "release": "pnpm run build && changeset publish",
     "test": "jest",
     "test:integration": "jest --config jest.integration.config.js --runInBand"

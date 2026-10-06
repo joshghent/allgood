@@ -1,8 +1,10 @@
 import pkg from "pg-connection-string";
+
 const { parse } = pkg;
-import { Config, Status } from "../index.js";
-import { HealthCheck } from "./types.js";
+
 import knex, { type Knex } from "knex";
+import { type Config, Status } from "../index.js";
+import type { HealthCheck } from "./types.js";
 
 /**
  * One pool per connection string, kept for the life of the process.
@@ -50,15 +52,15 @@ export const dbConnection = async (config: Config): Promise<HealthCheck> => {
     switch (protocol) {
       case "postgres":
       case "postgresql":
-        return 'pg'
+        return "pg";
       case "mysql":
-      case 'mariadb':
-        return 'mysql2'
-      case 'mongodb':
-      case 'mongodb+srv':
-        return 'mongodb'
-      case 'mssql':
-        return 'mssql'
+      case "mariadb":
+        return "mysql2";
+      case "mongodb":
+      case "mongodb+srv":
+        return "mongodb";
+      case "mssql":
+        return "mssql";
       default:
         throw new Error(`Unsupported protocol: ${protocol}`);
     }
@@ -103,4 +105,4 @@ export const dbConnection = async (config: Config): Promise<HealthCheck> => {
       time: Date.now() - start,
     };
   }
-}
+};

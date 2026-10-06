@@ -1,12 +1,8 @@
-import { type Request, type Response } from "express";
+import type { Request, Response } from "express";
 import { healthcheckHandler } from "../healthcheck.js";
 import type { Config } from "../index.js";
 
-export async function expressHealthCheck(
-  req: Request,
-  res: Response,
-  config: Config
-) {
+export async function expressHealthCheck(req: Request, res: Response, config: Config) {
   const normalizedHeaders: Record<string, string | undefined> = {};
 
   // Convert each header to the correct type

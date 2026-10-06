@@ -1,10 +1,10 @@
 import { Status } from "../index.js";
-import { HealthCheck } from "./types.js";
+import type { HealthCheck } from "./types.js";
 
 const checkEgress = async () => {
   const testUrls = [
-    'https://1.1.1.1', // Cloudflare DNS
-    'https://8.8.8.8'  // Google DNS
+    "https://1.1.1.1", // Cloudflare DNS
+    "https://8.8.8.8", // Google DNS
   ];
 
   for (const url of testUrls) {
@@ -13,13 +13,12 @@ const checkEgress = async () => {
       if (response.ok) {
         return true;
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   return false;
-}
-export const egress = async(): Promise<HealthCheck> => {
+};
+export const egress = async (): Promise<HealthCheck> => {
   const start = Date.now();
   const result = await checkEgress();
   return {
@@ -28,5 +27,5 @@ export const egress = async(): Promise<HealthCheck> => {
     componentName: "egress",
     message: result ? "Outbound internet is working" : "Outbound internet is not working",
     time: Date.now() - start,
-  }
-}
+  };
+};

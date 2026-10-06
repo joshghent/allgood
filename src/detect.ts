@@ -1,6 +1,6 @@
-import { type Request as ExpressRequest } from "express";
-import { type FastifyRequest } from "fastify";
-import { type Context as HonoContext } from "hono";
+import type { Request as ExpressRequest } from "express";
+import type { FastifyRequest } from "fastify";
+import type { Context as HonoContext } from "hono";
 
 // Helper function to detect Express
 export function isExpress(req: any, res: any): req is ExpressRequest {
@@ -27,11 +27,7 @@ export function isFastify(req: any): req is FastifyRequest {
 
 // Helper function to detect Hono
 export function isHono(req: any): req is HonoContext {
-  return (
-    typeof req === "object" &&
-    typeof req.header === "function" &&
-    typeof req.res !== "undefined"
-  );
+  return typeof req === "object" && typeof req.header === "function" && typeof req.res !== "undefined";
 }
 
 // Helper function to detect a Fetch API Request (Next.js App Router, Bun, Deno...)

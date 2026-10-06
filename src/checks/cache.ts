@@ -1,7 +1,7 @@
-import { Config, Status } from "../index.js";
-import { HealthCheck } from "./types.js";
-import { Redis } from "ioredis";
 import net from "node:net";
+import { Redis } from "ioredis";
+import { type Config, Status } from "../index.js";
+import type { HealthCheck } from "./types.js";
 
 const TIMEOUT_MS = 5000;
 
@@ -31,7 +31,7 @@ const checkMemcached = (connection: string): Promise<boolean> => {
       if (reply.includes("\r\n")) done(reply.startsWith("VERSION "));
     });
   });
-}
+};
 
 /** Rejects if `promise` hasn't settled in `ms`. */
 const within = async <T>(ms: number, promise: Promise<T>): Promise<T> => {
@@ -44,7 +44,7 @@ const within = async <T>(ms: number, promise: Promise<T>): Promise<T> => {
   } finally {
     clearTimeout(timer);
   }
-}
+};
 
 /**
  * A client per check, always disconnected afterwards.
@@ -69,14 +69,17 @@ const checkRedis = async (connection: string): Promise<boolean> => {
   // Without a listener ioredis reports connection errors as unhandled events.
   client.on("error", () => {});
   try {
-    await within(TIMEOUT_MS, client.connect().then(() => client.ping()));
+    await within(
+      TIMEOUT_MS,
+      client.connect().then(() => client.ping()),
+    );
     return true;
   } catch (error) {
     return false;
   } finally {
     client.disconnect();
   }
-}
+};
 
 export const cacheConnection = async (config: Config): Promise<HealthCheck> => {
   const start = Date.now();
@@ -114,5 +117,5 @@ export const cacheConnection = async (config: Config): Promise<HealthCheck> => {
     message: result ? "Cache connection successful" : "Cache connection failed",
     value: result ? "true" : "false",
     time: Date.now() - start,
-  }
+  };
 };

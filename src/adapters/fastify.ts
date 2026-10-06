@@ -1,12 +1,8 @@
-import { type FastifyRequest, type FastifyReply } from "fastify";
+import type { FastifyReply, FastifyRequest } from "fastify";
 import { healthcheckHandler } from "../healthcheck.js";
 import type { Config } from "../index.js";
 
-export async function fastifyHealthCheck(
-  req: FastifyRequest,
-  reply: FastifyReply,
-  config: Config
-) {
+export async function fastifyHealthCheck(req: FastifyRequest, reply: FastifyReply, config: Config) {
   const normalizedHeaders: Record<string, string | undefined> = {};
 
   // Convert each header to the correct type

@@ -74,7 +74,7 @@ const checkRedis = async (connection: string): Promise<boolean> => {
       client.connect().then(() => client.ping()),
     );
     return true;
-  } catch (error) {
+  } catch {
     return false;
   } finally {
     client.disconnect();
@@ -96,7 +96,7 @@ export const cacheConnection = async (config: Config): Promise<HealthCheck> => {
   const isRedis = config.cache_connection.toLowerCase().startsWith("redis://");
   const isMemcached = config.cache_connection.toLowerCase().startsWith("memcached://");
 
-  let result;
+  let result: boolean;
   if (isRedis) {
     result = await checkRedis(config.cache_connection);
   } else if (isMemcached) {

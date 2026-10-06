@@ -18,7 +18,7 @@ const checks: CheckRegistry = {
 };
 
 export const healthcheckHandler = async (headers: Record<string, string | undefined>, config: Config) => {
-  const acceptHeader = headers["accept"];
+  const acceptHeader = headers.accept;
   const results: Record<string, HealthCheck> = {};
 
   const checkPromises = Object.entries(config.checks)
@@ -44,7 +44,7 @@ export const healthcheckHandler = async (headers: Record<string, string | undefi
   // still serving, so it stays 200.
   const statusCode: 200 | 503 = status === Status.fail ? 503 : 200;
 
-  if (acceptHeader && acceptHeader.includes("text/html")) {
+  if (acceptHeader?.includes("text/html")) {
     const bannerColor = status === Status.pass ? "#4CAF50" : status === Status.warn ? "#FFC107" : "#F44336";
     const bannerTitle = status === Status.pass ? "👌 It's All Good" : "❌ Something's Wrong";
 
@@ -103,7 +103,7 @@ export const healthcheckHandler = async (headers: Record<string, string | undefi
                 <ul class="checks-list">
                   ${Object.entries(results)
                     .sort(([a], [b]) => a.localeCompare(b))
-                    .map(([checkName, checkResult]) => {
+                    .map(([, checkResult]) => {
                       const checkIcon =
                         checkResult.status === Status.pass ? "✅" : checkResult.status === Status.warn ? "⚠️" : "❌";
                       const valueDisplay = ["true", "false"].includes(checkResult.value)

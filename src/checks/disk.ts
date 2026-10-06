@@ -1,5 +1,5 @@
+import os from "node:os";
 import diskusage from "diskusage";
-import os from "os";
 import { Status } from "../index.js";
 import type { HealthCheck } from "./types.js";
 

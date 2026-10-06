@@ -31,7 +31,12 @@ const defaultConfig = {
   },
 };
 
+// The handler's published signature. `any` fits every framework's handler
+// type, and narrowing it would be a breaking change for anyone type-checking
+// against it. The detect helpers narrow it before use.
+// biome-ignore lint/suspicious/noExplicitAny: see above
 type GenericRequest = any;
+// biome-ignore lint/suspicious/noExplicitAny: see above
 type GenericResponse = any;
 
 export enum Status {
@@ -45,6 +50,7 @@ export const createHealthCheck = (config: Config) => {
   // so merging into defaultConfig leaked one call's options into every later
   // createHealthCheck in the same process.
   const mergedConfig = merge({}, defaultConfig, config);
+  // biome-ignore lint/suspicious/noConfusingVoidType: Express and Fastify handlers return Promise<void>
   return (req: GenericRequest, res?: GenericResponse): Promise<void | Response> => {
     // Detect the framework
 
@@ -59,7 +65,7 @@ export const createHealthCheck = (config: Config) => {
       return expressHealthCheck(req, res, mergedConfig);
     }
     // Fastify
-    if (req && req.server && isFastify(req)) {
+    if (req?.server && isFastify(req)) {
       return fastifyHealthCheck(req, res, mergedConfig);
     }
     // Hono

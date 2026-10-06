@@ -13,7 +13,9 @@ const checkEgress = async () => {
       if (response.ok) {
         return true;
       }
-    } catch (error) {}
+    } catch {
+      // Try the next URL.
+    }
   }
 
   return false;

@@ -1,11 +1,11 @@
 name: CI
 on:
   push:
-    branches:
-      - "**"
+    branches: [main]
+  pull_request:
 
 jobs:
-  build:
+  unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,3 +18,48 @@ jobs:
       - run: pnpm install
       - run: pnpm run build
       - run: pnpm run test
+
+  integration:
+    runs-on: ubuntu-latest
+    # Same images and ports as compose.yaml.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: allgood
+          POSTGRES_PASSWORD: allgood
+          POSTGRES_DB: allgood
+        ports: ["54329:5432"]
+        options: >-
+          --health-cmd "pg_isready -U allgood"
+          --health-interval 2s --health-retries 30
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: allgood
+          MYSQL_DATABASE: allgood
+          MYSQL_USER: allgood
+          MYSQL_PASSWORD: allgood
+        ports: ["33069:3306"]
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uallgood -pallgood"
+          --health-interval 2s --health-retries 60
+      redis:
+        image: redis:7
+        ports: ["63799:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s --health-retries 30
+      memcached:
+        image: memcached:1.6
+        ports: ["11219:11211"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - run: pnpm install
+      - run: pnpm run test:integration

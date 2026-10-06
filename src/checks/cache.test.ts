@@ -115,7 +115,8 @@ describe('cache', () => {
       }
     });
 
-    expect(Memcached).toHaveBeenCalledWith('localhost:11211');
+    // The client's default retries made a check against a down server hang.
+    expect(Memcached).toHaveBeenCalledWith('localhost:11211', expect.objectContaining({ retries: 0, retry: 0, remove: true }));
     expect(mockMemcachedInstance.version).toHaveBeenCalled();
     expect(mockMemcachedInstance.end).toHaveBeenCalled();
     expect(result).toEqual({

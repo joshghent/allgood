@@ -3,9 +3,26 @@ import { HealthCheck } from "./types.js";
 import {Redis} from "ioredis";
 import Memcached from "memcached";
 
+/**
+ * One try, then give up and forget the server.
+ *
+ * With the client's defaults a down server never answered: the command waited
+ * on 5 retries 30s apart, so the whole health check hung. `retries` and
+ * `failures` at 0 fail it at once; `retry: 0` and `remove: true` stop the client
+ * reconnecting in the background after `end()`.
+ *
+ * ponytail: a connect to an unroutable host outlives `end()` until the OS gives
+ * up on it (a minute or two). One socket per check, it closes on its own.
+ */
 const checkMemcached = async (connection: string): Promise<boolean> => {
   try {
-    const client = new Memcached(connection.replace("memcached://", ""));
+    const client = new Memcached(connection.replace("memcached://", ""), {
+      timeout: 5000,
+      retries: 0,
+      failures: 0,
+      retry: 0,
+      remove: true,
+    });
 
     await new Promise((resolve, reject) => {
       client.version((err, result) => {

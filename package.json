@@ -27,7 +27,6 @@
     "build:esm": "tsc --project tsconfig.esm.json",
     "check": "biome check --write",
     "workflow:check": "biome check",
-    "release": "pnpm run build && changeset publish",
     "test": "jest",
     "test:integration": "jest --config jest.integration.config.js --runInBand",
     "typecheck": "tsc -p tsconfig.test.json"

@@ -12,6 +12,7 @@ overrides:
   brace-expansion: ^2.1.7
   picomatch: ^4.0.4
   path-to-regexp: ^8.4.0
+  handlebars: ^4.7.10
 
 importers:
 

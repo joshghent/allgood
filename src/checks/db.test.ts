@@ -102,6 +102,28 @@ describe("dbConnection", () => {
     });
   });
 
+  it("reports a timeout separately from a refused connection", async () => {
+    // knex throws this when no connection arrives within acquireConnectionTimeout.
+    const timeout = Object.assign(new Error("Knex: Timeout acquiring a connection."), { name: "KnexTimeoutError" });
+    (knex as unknown as jest.Mock).mockReturnValue({
+      raw: jest.fn().mockRejectedValue(timeout),
+      destroy: jest.fn(),
+    });
+
+    const result = await dbConnection({
+      db_connection: "postgres://user:pass@localhost:5432/db",
+      checks: { db_connection: true },
+    });
+
+    expect(result).toEqual({
+      componentName: "db_connection",
+      status: Status.fail,
+      message: "Database connection timed out",
+      value: "timeout",
+      time: expect.any(Number),
+    });
+  });
+
   it("should handle mysql connections correctly", async () => {
     const mockRaw = jest.fn().mockResolvedValue(true);
     (knex as unknown as jest.Mock).mockReturnValue({

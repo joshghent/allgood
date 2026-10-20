@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from "node:crypto";
 import { cacheConnection } from "./checks/cache.js";
 import { cpuCheck } from "./checks/cpu.js";
 import { dbConnection } from "./checks/db.js";
@@ -17,6 +18,14 @@ const checks: CheckRegistry = {
   cpu_usage: cpuCheck,
 };
 
+// Readings that describe the host. Anyone can fingerprint the machine from
+// them, so a configured secret keeps them back.
+const SYSTEM_CHECKS = ["memory_usage", "disk_space", "cpu_usage"];
+
+// Hashing first gives timingSafeEqual two buffers of equal length.
+const sameSecret = (given: string, expected: string) =>
+  timingSafeEqual(createHash("sha256").update(given).digest(), createHash("sha256").update(expected).digest());
+
 export const healthcheckHandler = async (headers: Record<string, string | undefined>, config: Config) => {
   const acceptHeader = headers.accept;
   const results: Record<string, HealthCheck> = {};
@@ -30,6 +39,12 @@ export const healthcheckHandler = async (headers: Record<string, string | undefi
     });
 
   await Promise.all(checkPromises);
+
+  if (config.secret && !sameSecret(headers["x-allgood-secret"] ?? "", config.secret)) {
+    for (const name of SYSTEM_CHECKS) {
+      if (results[name]) results[name].value = "hidden";
+    }
+  }
 
   // Worked out once every check is in. Setting it as each one finished let a
   // warning that finished last overwrite a failure that finished first.

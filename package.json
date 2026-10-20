@@ -70,7 +70,8 @@
   "packageManager": "pnpm@11.24.0",
   "pnpm": {
     "overrides": {
-      "handlebars": "~4.7.10"
+      "handlebars": "~4.7.10",
+      "launch-editor": "~2.14.2"
     }
   }
 }

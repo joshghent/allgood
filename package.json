@@ -67,11 +67,5 @@
     "pg": "^8.23.1",
     "pg-connection-string": "^2.14.1"
   },
-  "packageManager": "pnpm@11.24.0",
-  "pnpm": {
-    "overrides": {
-      "handlebars": "~4.7.10",
-      "launch-editor": "~2.14.2"
-    }
-  }
+  "packageManager": "pnpm@11.24.0"
 }

@@ -14,3 +14,4 @@ overrides:
   picomatch: ^4.0.4
   path-to-regexp: ^8.4.0
   handlebars: ^4.7.10
+  launch-editor: ^2.14.2

@@ -66,6 +66,44 @@ describe("createHealthCheck with a Fetch API Request (Next.js App Router)", () =
   });
 });
 
+describe("createHealthCheck with a secret", () => {
+  const request = (headers: Record<string, string> = {}) =>
+    new Request("http://localhost/health", { headers: { accept: "application/json", ...headers } });
+
+  beforeEach(() => {
+    (memoryCheck as jest.Mock).mockResolvedValue({ ...result(Status.pass), value: "41.20%" });
+    (cpuCheck as jest.Mock).mockResolvedValue({ ...result(Status.pass), value: "12.00%" });
+  });
+
+  it("hides system values from a request without the secret", async () => {
+    const body = await (await createHealthCheck({ ...config, secret: "s3cret" })(request())).json();
+
+    expect(body.status).toBe(Status.pass);
+    expect(body.results.memory_usage.value).toBe("hidden");
+    expect(body.results.cpu_usage.value).toBe("hidden");
+  });
+
+  it("hides them from a request with the wrong secret", async () => {
+    const res = await createHealthCheck({ ...config, secret: "s3cret" })(request({ "x-allgood-secret": "guess" }));
+
+    expect((await res.json()).results.memory_usage.value).toBe("hidden");
+  });
+
+  it("shows them to a request with the secret", async () => {
+    const res = await createHealthCheck({ ...config, secret: "s3cret" })(request({ "x-allgood-secret": "s3cret" }));
+    const body = await res.json();
+
+    expect(body.results.memory_usage.value).toBe("41.20%");
+    expect(body.results.cpu_usage.value).toBe("12.00%");
+  });
+
+  it("shows them when no secret is configured", async () => {
+    const body = await (await createHealthCheck(config)(request())).json();
+
+    expect(body.results.memory_usage.value).toBe("41.20%");
+  });
+});
+
 describe("createHealthCheck config", () => {
   it("does not leak one call's options into the next", async () => {
     createHealthCheck({ checks: { db_connection: true } });

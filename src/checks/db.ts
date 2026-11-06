@@ -97,6 +97,15 @@ export const dbConnection = async (config: Config): Promise<HealthCheck> => {
     };
   } catch (error) {
     console.error(error);
+    if (error instanceof Error && error.name === "KnexTimeoutError") {
+      return {
+        componentName: "db_connection",
+        status: Status.fail,
+        message: "Database connection timed out",
+        value: "timeout",
+        time: Date.now() - start,
+      };
+    }
     return {
       componentName: "db_connection",
       status: Status.fail,

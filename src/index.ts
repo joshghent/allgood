@@ -11,6 +11,9 @@ import { isExpress, isExpressResponse, isFastify, isFastifyReply, isHono, isWebR
 export interface Config {
   db_connection?: string; // the database connection string
   cache_connection?: string; //redis or memcache
+  // When set, CPU, memory and disk values are hidden unless the request sends
+  // this value in the x-allgood-secret header. Statuses are always shown.
+  secret?: string;
   checks: {
     db_connection?: boolean;
     db_migrations?: boolean;
